@@ -28,6 +28,7 @@ export async function getPokemonByName(request: FastifyRequest, reply: FastifyRe
     };
 
     const response = (await makeApiCall(getUrl, options)) as IPokemonWithStats;
+    // No need to do error check here since error check has been implemented in the makeApiCall function
 
 
     await computeResponse(response);
@@ -83,25 +84,20 @@ export const computeResponse = async (response: unknown): Promise<Partial<IPokem
 
     // use foreach to mutate the response.
     stats.forEach((element) => {
-      const stat: number[] = [];
+      const stats: number[] = [];
 
-      //if poke has stats, get the name in stats,stat
-      // check if equal to element.name
-      // if yes, stats.push(stats.stat.name)
-      // else ([])
 
       //JS is case sensitive 'a' !== 'A'
       const isStatExist =
         statNames[element.stat.name] &&
-        `${statNames[element.stat.name].stat.name}`.toUpperCase() ===
-        `${element.stat.name}`.toUpperCase();
+        `${statNames[element.stat.name].stat.name}`.toUpperCase() === `${element.stat.name}`.toUpperCase();
 
       if (isStatExist) {
         const base_stat = statNames[element.stat.name].base_stat;
-        stat.push(base_stat);
+        stats.push(base_stat);
       }
 
-      const avg = stat.length ? stat.reduce((a, b) => a + b) / stat.length : 0;
+      const avg = stats.length ? stats.reduce((a, b) => a + b) / stats.length : 0;
       element.averageStat = avg;
     });
 

@@ -37,7 +37,7 @@ Example:
 
 ```
 
-- Also, some modules are imported within the function and not at the top of the file. With ES Modules, imports are static, which means they are executed at parse time. This is why imports are “hoisted”. They are implicitly moved to the top of the file. Therefore, we cannot use the import syntax  just in the middle of your code unlike CommonJS imports are dynamically resolved at runtime. The require() function is simply run at the time our code executes. As a consequence, one can call it anywhere in the  code.
+- Also, some modules are imported within the function and not at the top of the file. With ES Modules, imports are static, which means they are executed at parse time. This is why imports are “hoisted”. They are implicitly moved to the top of the file. Therefore, we cannot use the import syntax  just in the middle of our code unlike CommonJS imports are dynamically resolved at runtime. The require() function is simply run at the time our code executes. As a consequence, one can call it anywhere in the  code.
 
 
 
@@ -62,7 +62,7 @@ Ternary operators can become confusing or non-readable for multiple conditions c
 
 The goal of the above snippet is to check if `name` was passed as the params, if yes, name should be appended to the `urlApiPokeman` and `'"?offset=20"'` and `&limit=20` should be added to the `urlApiPokeman` before making the api call.
 
-The refactoring i did here was to create a function __(getPokemonUrl())__ that takes `name:string` as an arguement and return the `url+name+offset+limit` if name is passed and default to `urt+name+offset+limit` when name is not passed.
+The refactoring i did here was to create a function __(getPokemonUrl())__ that takes `name:string` as an arguement and return the `url+name+offset+limit` if name is passed and default to `urt+offset+limit` when name is not passed.
 
 One of the reason I created this function to achieve the above snippet is because
 - **_getPokemonByName()_** has so many things going on which sort of contradicts the **"S- single responsibilty"** of "SOLID" principle 
@@ -117,17 +117,54 @@ export const makeApiCall = async (url: string, options?: Partial<IOptions>): Pro
 The above function is called anytime and api request is to be made to third party.
 
 
-5. Created an error class which works in hand with fastify setErrorHandler to create custom error. This makes error handling more clean and readable. And I also used `winston` for logging
+5. Created an **`error class`** which works in hand with fastify **`setErrorHandler`** to create custom error. This makes error handling more clean and readable. And I also used `winston` for logging
 
-__Ref files:__ 
+__Check files:__ 
 
-./src/common/http
+_./src/common/http_
 
-.src/common/error
+_.src/common/error_
 
-./src/logger
+._/src/logger_
 
-4. Remove `any` as a type and replace with Interface or incase of not knowing the shape upfront, use `unknown`. 
+```javascript
+
+// setErrorHandler 
+app.setErrorHandler(async (error, _request, reply) => {
+  let customError = error;
+
+  //log error for internal investigation
+  logger.error(error);
+
+  if (!(error instanceof CustomError)) {
+
+    customError = new CustomError(
+      //Use this generic error message so users wont see error messages like "undefined" or DB error
+      "An error occurred, admin fixing 🛠"
+    );
+  }
+
+  reply.status(customError.statusCode).send(new ErrorResponseObject(`${customError.message}`));
+})
+
+```
+
+- Also created `Error and Success Response class` for consistency when for API response with. Every response looks like this:
+
+```Javascript
+{
+    "success": xxx,
+    "message": xxx,
+    "data":xxxx
+}
+
+```
+
+file reference: `./common/http`
+
+
+
+6. Remove `any` as a type and replace with Interface or incase of not knowing the shape upfront, use `unknown`. 
 Using the `any` type defeats the purpose of writing Typescript code. When `any` is used, the TypeScript compiler allows for the type to  be any data type, which is not "safe" and can lead to unexpected values if one is not  careful. The idea of TypeScript is to provide "strictly-typed" JS code so that its durable and safer than plain old JS which is "loosely-typed".
 
 [Reference](https://www.typescriptlang.org/docs/handbook/declaration-files/do-s-and-don-ts.html).
@@ -141,11 +178,13 @@ Using the `any` type defeats the purpose of writing Typescript code. When `any` 
  // After
  const resp = response as IPokemonWithStats;
 
+ const pokemonTypes: IPokemonWithStats[] = [];
+
 ```
 
 
 
-6. 
+7. 
 ```javascript
 let types = resp.types.map(type => type.type).map(type => { return type.url }).reduce((types, typeUrl) => types.push(typeUrl));
 
@@ -164,7 +203,7 @@ Below is the refacotring
 ```
 ### **PERFORMANCE/OPTIMIZATION**
 
-7. **Run api calls concurrently**
+8. **Run api calls concurrently**
 
 This was done by using ` Promise.all()` while making api calls to the urls. This helps to increase the performace of the system by running the code concurrently.
 
@@ -202,10 +241,10 @@ response.stats.forEach(element => {
   });
 ```
 
-The time complexity of the above snippet is **O(n4)** which will affect the performance of the code.
+The time complexity of the above snippet is **O(n^4)** which will affect the performance of the code.
 
 The above snippet was refactored by:
-- first creating an hashMap
+- first creating an hashMap data structure
 - run a conditional nested loop 0(n) or 0(n2)
 - Populate hashMap
 - Run a loop and check hashMap using a key [Checking hashMap is Time-complexity 0(1)]
@@ -215,6 +254,8 @@ Below is the code refactoring
 ```javascript
    // Create hashMap
     const statNames = new Map();
+
+    // conditional nested loop O(N) / O(N^2)
 
     pokemonTypes.forEach((element) => {
       if (element?.stats) {
@@ -226,6 +267,7 @@ Below is the code refactoring
     })
 
 
+
     // use foreach to mutate the response.
     stats.forEach((element) => {
       const stat: number[] = [];
@@ -235,8 +277,7 @@ Below is the code refactoring
       //JS is case sensitive 'a' !== 'A'
       const isStatExist =
         statNames[element.stat.name] &&
-        `${statNames[element.stat.name].stat.name}`.toUpperCase() ===
-        `${element.stat.name}`.toUpperCase();
+        `${statNames[element.stat.name].stat.name}`.toUpperCase() ===`${element.stat.name}`.toUpperCase();
 
       if (isStatExist) {
         const base_stat = statNames[element.stat.name].base_stat;

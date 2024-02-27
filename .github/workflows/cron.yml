@@ -23,7 +23,6 @@ jobs:
 
           response=$(curl -vs
           https://webhook.site/8da87bfa-ef79-438d-a2d8-168eb0778955 2>&1)
-
           echo "response from curl= $response"
   jobsApi2:
     runs-on: ubuntu-latest

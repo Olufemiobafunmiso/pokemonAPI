@@ -2,7 +2,7 @@ name: strapi-cron-job
 'on':
   schedule:
     - cron: '*/1 * * * *'
-    - cron: '*/3 * * * *'
+    - cron: '*/2 * * * *'
   workflow_dispatch: null
 jobs:
   jobsApi:

@@ -1,13 +1,13 @@
 name: strapi-cron-job
 'on':
   schedule:
-    - cron: 35 12 * * 1
-    - cron: 40 12 * * 1
-    - cron: 45 12 * * 1
+    - cron: 10 13 * * 1
+    - cron: 15 13 * * 1
+    - cron: 20 13 * * 1
   workflow_dispatch: null
 jobs:
   stg_jobs_api:
-    if: ${{ github.event.schedule == '35 12 * * 1' }}
+    if: ${{ github.event.schedule == '10 13 * * 1' }}
     runs-on: ubuntu-latest
     # environment: strapi-staging
     steps:
@@ -23,7 +23,7 @@ jobs:
         run: |
           curl -vs https://brand-onesite-cms-strapi-stg-v4xn3wfs6a-ew.a.run.app/api/cron/jobs
   stg_clear_stale_jobs:
-    if: ${{ github.event.schedule == '40 12 * * 1' }}
+    if: ${{ github.event.schedule == '15 13 * * 1' }}
     runs-on: ubuntu-latest
     # environment: strapi-staging
     steps:
@@ -39,7 +39,7 @@ jobs:
         run: |
           curl -vs https://brand-onesite-cms-strapi-stg-v4xn3wfs6a-ew.a.run.app/api/cron/clear-stale/jobs
   stg_clear_stale_auditlogs:
-    if: ${{ github.event.schedule == '45 12 * * 1' }}
+    if: ${{ github.event.schedule == '20 13 * * 1' }}
     runs-on: ubuntu-latest
     # environment: strapi-staging
     steps:

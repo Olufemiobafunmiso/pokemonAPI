@@ -1,47 +1,104 @@
-# name: strapi-cron-job
-# 'on':
-#   schedule:
-#     - cron: '*/1 * * * *'
-#     - cron: '*/2 * * * *'
-#   workflow_dispatch: null
-# jobs:
-#   jobsApi:
-#     # if: github.event.schedule == '*/1 * * * *' && github.ref == 'refs/heads/main'
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Check out the repository
-#         uses: actions/setup-node@v3
-#         with:
-#           node-version: 18
-#       - name: Echo GitHub event_name and schedule
-#         run: |
-#           echo "GitHub event_name: ${{ github.event_name }}"
-#           echo "GitHub event.schedule: ${{ github.event.schedule }}"
-#           echo "GitHub event.ref: ${{ github.ref }}"
-#       - name: Get request to the custom Strapi route
-#         run: >
-#           echo "Executing curl command"
-
-#           response=$(curl -vs
-#           https://webhook.site/8da87bfa-ef79-438d-a2d8-168eb0778955 2>&1) echo
-#           "response from curl= $response"
-#   jobsApi2:
-#     if: github.event.schedule == '*/2 * * * *' && github.ref == 'refs/heads/main'
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Check out the repository
-#         uses: actions/setup-node@v3
-#         with:
-#           node-version: 18
-#       - name: Echo GitHub event_name and schedule
-#         run: |
-#           echo "GitHub event_name: ${{ github.event_name }}"
-#           echo "GitHub event.schedule: ${{ github.event.schedule }}"
-#       - name: Get request to the custom Strapi route
-#         run: >
-#           echo "Executing curl command"
-
-#           response=$(curl -vs
-#           https://webhook.site/8da87bfa-ef79-438d-a2d8-168eb0778955 2>&1)
-
-#           echo "response from curl= $response"
+name: strapi-cron-job
+'on':
+  schedule:
+    - cron: 30 11 * * 1
+    - cron: 35 11 * * 1
+    - cron: 40 1 * * 1
+  workflow_dispatch: null
+jobs:
+  stg_jobs_api:
+    if: ${{ github.event.schedule == '30 11 * * 1' }}
+    runs-on: ubuntu-latest
+    # environment: strapi-staging
+    steps:
+      - name: Check out the repository
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Echo GitHub event_name and schedule
+        run: |
+          echo "GitHub event_name: ${{ github.event_name }}"
+          echo "GitHub event.schedule: ${{ github.event.schedule }}"
+      - name: Get request to the custom Strapi route
+        run: |
+          curl -vs https://brand-onesite-cms-strapi-stg-v4xn3wfs6a-ew.a.run.app/api/cron/jobs
+  stg_clear_stale_jobs:
+    if: ${{ github.event.schedule == '35 11 * * 1' }}
+    runs-on: ubuntu-latest
+    # environment: strapi-staging
+    steps:
+      - name: Check out the repository
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Echo GitHub event_name and schedule
+        run: |
+          echo "GitHub event_name: ${{ github.event_name }}"
+          echo "GitHub event.schedule: ${{ github.event.schedule }}"
+      - name: Get request to the custom Strapi route
+        run: |
+          curl -vs https://brand-onesite-cms-strapi-stg-v4xn3wfs6a-ew.a.run.app/api/cron/clear-stale/jobs
+  stg_clear_stale_auditlogs:
+    if: ${{ github.event.schedule == '40 1 * * 1' }}
+    runs-on: ubuntu-latest
+    # environment: strapi-staging
+    steps:
+      - name: Check out the repository
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Echo GitHub event_name and schedule
+        run: |
+          echo "GitHub event_name: ${{ github.event_name }}"
+          echo "GitHub event.schedule: ${{ github.event.schedule }}"
+      - name: Get request to the custom Strapi route
+        run: |
+          curl -vs https://brand-onesite-cms-strapi-stg-v4xn3wfs6a-ew.a.run.app/api/cron/clear-stale/auditlogs
+  # prd_jobs_api:
+  #   if: ${{ github.event.schedule == '0 1 * * 0' }}
+  #   runs-on: ubuntu-latest
+  #   environment: strapi-production
+  #   steps:
+  #     - name: Check out the repository
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+  #     - name: Echo GitHub event_name and schedule
+  #       run: |
+  #         echo "GitHub event_name: ${{ github.event_name }}"
+  #         echo "GitHub event.schedule: ${{ github.event.schedule }}"
+  #     - name: Get request to the custom Strapi route
+  #       run: |
+  #         curl -vs https://${{vars.FE_URL}}/api/cron/jobs
+  # prd_clear_stale_auditlogs:
+  #   if: ${{ github.event.schedule == '0 1 * * 1/2' }}
+  #   runs-on: ubuntu-latest
+  #   environment: strapi-production
+  #   steps:
+  #     - name: Check out the repository
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+  #     - name: Echo GitHub event_name and schedule
+  #       run: |
+  #         echo "GitHub event_name: ${{ github.event_name }}"
+  #         echo "GitHub event.schedule: ${{ github.event.schedule }}"
+  #     - name: Get request to the custom Strapi route
+  #       run: |
+  #         curl -vs https://brand-onesite-cms-strapi-stg-v4xn3wfs6a-ew.a.run.app/
+  # prod_clear_stale_jobs:
+  #   if: ${{ github.event.schedule == '0 6 * * 0' }}
+  #   runs-on: ubuntu-latest
+  #   environment: strapi-production
+  #   steps:
+  #     - name: Check out the repository
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+  #     - name: Echo GitHub event_name and schedule
+  #       run: |
+  #         echo "GitHub event_name: ${{ github.event_name }}"
+  #         echo "GitHub event.schedule: ${{ github.event.schedule }}"
+  #     - name: Get request to the custom Strapi route
+  #       run: |
+  #         curl -vs https://${{vars.FE_URL}}/api/cron/clear-stale/jobs
